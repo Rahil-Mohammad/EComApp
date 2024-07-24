@@ -21,7 +21,7 @@ const Login = ({ onLogin }) => {
     <div className="flex items-center justify-center min-h-screen bg-blue-900">
       <div className="w-full max-w-md p-8 space-y-4 bg-white rounded-lg shadow-md">
         <div className="flex justify-center">
-          <div className="text-2xl font-semibold text-blue-700">Login</div>
+          <div className="text-2xl font-semibold text-blue-700">Login Page</div>
         </div>
         <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
           <Form className="space-y-6">
@@ -51,7 +51,7 @@ const Login = ({ onLogin }) => {
             </button>
             <div className="text-center">
               <a href="/forgot-password" className="text-sm text-blue-600 hover:underline">
-                Forgot password? 
+                Forgot password?
               </a>
             </div>
           </Form>
@@ -62,5 +62,3 @@ const Login = ({ onLogin }) => {
 };
 
 export default Login;
-
-//this is login page

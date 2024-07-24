@@ -5,9 +5,11 @@ import ProductDetails from './ProductDetails';
 import Header from './Header';
 import Footer from './Footer';
 import CartPage from './CartPage';
+import Login from './Login'; 
 
 const App = () => {
   const [cartItems, setCartItems] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // 
 
   useEffect(() => {
     const storedCartItems = localStorage.getItem('cartItems');
@@ -44,9 +46,14 @@ const App = () => {
     setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
+  const handleLogin = (values) => {
+    
+    setIsAuthenticated(true);
+  };
+
   return (
     <div className="bg-gray-200">
-      <Header />
+      <Header isAuthenticated={isAuthenticated} />
       <Routes>
         <Route path="/" element={<ProductListPage onAddToCart={handleAddToCart} />} />
         <Route path="/ProductDetails/:id" element={<ProductDetails onAddToCart={handleAddToCart} />} />
@@ -60,6 +67,7 @@ const App = () => {
             />
           }
         />
+        <Route path="/login" element={<Login onLogin={handleLogin} />} /> 
       </Routes>
       <Footer />
     </div>

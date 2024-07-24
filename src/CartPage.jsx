@@ -1,16 +1,65 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import CartList from './CartList';
 
 const CartPage = ({ cartItems, onRemoveFromCart, onUpdateCart }) => {
-  const handleQuantityChange = (id, quantity) => {
-    onUpdateCart(id, quantity);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      setLoading(true);
+      try {
+        const storedCartItems = await new Promise((resolve) => {
+          const items = localStorage.getItem('cartItems');
+          resolve(items ? JSON.parse(items) : []);
+        });
+        onUpdateCart(storedCartItems);
+      } catch (error) {
+        console.error('Error fetching cart items:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCartItems();
+  }, [onUpdateCart]);
+
+  const handleQuantityChange = async (id, quantity) => {
+    setLoading(true);
+    try {
+      await new Promise((resolve) => {
+        onUpdateCart(id, quantity);
+        resolve();
+      });
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleRemoveItem = async (id) => {
+    setLoading(true);
+    try {
+      await new Promise((resolve) => {
+        onRemoveFromCart(id);
+        resolve();
+      });
+    } catch (error) {
+      console.error('Error removing item:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-8">
       <CartList
         cartItems={cartItems}
-        onRemoveFromCart={onRemoveFromCart}
+        onRemoveFromCart={handleRemoveItem}
         onQuantityChange={handleQuantityChange}
       />
       <div className="mt-8 flex justify-between items-center">

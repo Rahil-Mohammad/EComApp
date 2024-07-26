@@ -5,11 +5,11 @@ import ProductDetails from './ProductDetails';
 import Header from './Header';
 import Footer from './Footer';
 import CartPage from './CartPage';
-import Login from './Login'; 
+import Login from './Login';
 
 const App = () => {
   const [cartItems, setCartItems] = useState([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const storedCartItems = localStorage.getItem('cartItems');
@@ -34,7 +34,7 @@ const App = () => {
     });
   };
 
-  const handleUpdateQuantity = (id, quantity) => {
+  const handleUpdateCart = (id, quantity) => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
         item.id === id ? { ...item, quantity } : item
@@ -42,12 +42,11 @@ const App = () => {
     );
   };
 
-  const handleRemoveItem = (id) => {
+  const handleRemoveFromCart = (id) => {
     setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
   const handleLogin = (values) => {
-    
     setIsAuthenticated(true);
   };
 
@@ -62,12 +61,12 @@ const App = () => {
           element={
             <CartPage
               cartItems={cartItems}
-              onUpdateQuantity={handleUpdateQuantity}
-              onRemoveItem={handleRemoveItem}
+              onUpdateCart={handleUpdateCart}
+              onRemoveFromCart={handleRemoveFromCart}
             />
           }
         />
-        <Route path="/login" element={<Login onLogin={handleLogin} />} /> 
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
       </Routes>
       <Footer />
     </div>

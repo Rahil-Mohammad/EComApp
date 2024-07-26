@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import CartList from './CartList';
 
 const CartPage = ({ cartItems, onRemoveFromCart, onUpdateCart }) => {
@@ -26,10 +27,7 @@ const CartPage = ({ cartItems, onRemoveFromCart, onUpdateCart }) => {
   const handleQuantityChange = async (id, quantity) => {
     setLoading(true);
     try {
-      await new Promise((resolve) => {
-        onUpdateCart(id, quantity);
-        resolve();
-      });
+      onUpdateCart(id, quantity);
     } catch (error) {
       console.error('Error updating quantity:', error);
     } finally {
@@ -40,10 +38,7 @@ const CartPage = ({ cartItems, onRemoveFromCart, onUpdateCart }) => {
   const handleRemoveItem = async (id) => {
     setLoading(true);
     try {
-      await new Promise((resolve) => {
-        onRemoveFromCart(id);
-        resolve();
-      });
+      onRemoveFromCart(id);
     } catch (error) {
       console.error('Error removing item:', error);
     } finally {
@@ -81,6 +76,19 @@ const CartPage = ({ cartItems, onRemoveFromCart, onUpdateCart }) => {
       </div>
     </div>
   );
+};
+
+CartPage.propTypes = {
+  cartItems: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      title: PropTypes.string.isRequired,
+      price: PropTypes.number.isRequired,
+      quantity: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+  onRemoveFromCart: PropTypes.func.isRequired,
+  onUpdateCart: PropTypes.func.isRequired,
 };
 
 export default CartPage;

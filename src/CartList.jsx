@@ -35,6 +35,7 @@ CartList.propTypes = {
       title: PropTypes.string.isRequired,
       price: PropTypes.number.isRequired,
       quantity: PropTypes.number.isRequired,
+      image: PropTypes.string.isRequired,
     })
   ).isRequired,
   onRemoveFromCart: PropTypes.func.isRequired,

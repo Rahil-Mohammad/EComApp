@@ -13,6 +13,12 @@ const CartRow = ({ item, onRemoveFromCart, onQuantityChange }) => {
   return (
     <tr>
       <td className="border border-gray-200 p-2 flex items-center">
+        <button
+          onClick={handleRemove}
+          className="bg-gray-200 text-red-500 rounded-full w-8 h-8 flex items-center justify-center mr-2"
+        >
+          &times;
+        </button>
         <img src={item.image} alt={item.title} className="w-16 h-16" />
         <span className="ml-4">{item.title}</span>
       </td>

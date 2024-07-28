@@ -10,6 +10,9 @@ const sortProducts = (products, option) => {
     case 'price-high-low':
       sortedProducts.sort((a, b) => b.price - a.price);
       break;
+    case 'rating':
+      sortedProducts.sort((a, b) => b.rate - a.rate); // Sort by rating
+      break;
     default:
       sortedProducts = products;
   }

@@ -1,49 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import CartList from './CartList';
+import CouponCode from './CouponCode';
+import CartTotals from './CartTotals';
 
-const CartPage = ({ cartItems, onRemoveFromCart, onUpdateCart }) => {
+const CartPage = ({ cartItems, onUpdateCart, onRemoveFromCart }) => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCartItems = async () => {
       setLoading(true);
+      setError(null);
       try {
         const storedCartItems = await new Promise((resolve) => {
           const items = localStorage.getItem('cartItems');
           resolve(items ? JSON.parse(items) : []);
         });
-        onUpdateCart(storedCartItems);
+        setCartItems(storedCartItems);
       } catch (error) {
-        console.error('Error fetching cart items:', error);
+        setError('');
       } finally {
         setLoading(false);
       }
     };
 
     fetchCartItems();
-  }, [onUpdateCart]);
+  }, []);
 
-  const handleQuantityChange = async (id, quantity) => {
-    setLoading(true);
-    try {
-      onUpdateCart(id, quantity);
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-    } finally {
-      setLoading(false);
-    }
+  const handleQuantityChange = (id, quantity) => {
+    onUpdateCart(id, quantity);
   };
 
-  const handleRemoveItem = async (id) => {
-    setLoading(true);
-    try {
-      onRemoveFromCart(id);
-    } catch (error) {
-      console.error('Error removing item:', error);
-    } finally {
-      setLoading(false);
-    }
+  const handleRemoveItem = (id) => {
+    onRemoveFromCart(id);
+  };
+
+  const handleUpdateCart = () => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    alert('Cart updated!');
   };
 
   if (loading) {
@@ -52,43 +46,24 @@ const CartPage = ({ cartItems, onRemoveFromCart, onUpdateCart }) => {
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-8">
+      {error && <div className="text-red-500">{error}</div>}
       <CartList
         cartItems={cartItems}
         onRemoveFromCart={handleRemoveItem}
         onQuantityChange={handleQuantityChange}
       />
-      <div className="mt-8 flex justify-between items-center">
-        <div>
-          <input
-            type="text"
-            placeholder="Coupon code"
-            className="border rounded px-4 py-2 mr-2"
-          />
-          <button className="bg-red-500 text-white rounded px-4 py-2">Apply Coupon</button>
-        </div>
-        <button className="bg-gray-500 text-white rounded px-4 py-2">Update Cart</button>
+      <div className="flex justify-between items-center mt-4">
+        <CouponCode />
+        <button
+          onClick={handleUpdateCart}
+          className="bg-red-500 text-white rounded px-4 py-2"
+        >
+          UPDATE CART
+        </button>
       </div>
-      <div className="text-right mt-8 border-t pt-4">
-        <div className="text-xl font-bold">Cart totals</div>
-        <div className="text-lg">Subtotal: ${cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}</div>
-        <div className="text-lg">Total: ${cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}</div>
-        <button className="bg-red-500 text-white rounded px-4 py-2 mt-4">Proceed to Checkout</button>
-      </div>
+      <CartTotals cartItems={cartItems} />
     </div>
   );
-};
-
-CartPage.propTypes = {
-  cartItems: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      title: PropTypes.string.isRequired,
-      price: PropTypes.number.isRequired,
-      quantity: PropTypes.number.isRequired,
-    })
-  ).isRequired,
-  onRemoveFromCart: PropTypes.func.isRequired,
-  onUpdateCart: PropTypes.func.isRequired,
 };
 
 export default CartPage;

@@ -1,9 +1,14 @@
 import axios from 'axios';
 
-export const getProData = (id) => {
-  return axios.get(`https://dummyjson.com/products/${id}`);
-};
-
-export const getList = () => {
-  return axios.get('https://dummyjson.com/products');
-};
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);         //

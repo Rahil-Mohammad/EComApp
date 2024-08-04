@@ -1,12 +1,44 @@
 import React, { useState } from 'react';
-import { Field, ErrorMessage, Formik } from 'formik';
-import { useNavigate } from 'react-router-dom';
-
-import withFormik from './withFormik'; // Import the HOC
+import { Formik, Field, ErrorMessage, Form } from 'formik';
 import * as Yup from 'yup';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const LoginForm = ({ isSignUp, switchToSignUp, switchToLogin, handleSubmit, handleChange, values, errors, touched }) => {
-  const navigate = useNavigate(); // Hook for navigation
+const LoginForm = ({ isSignUp, switchToSignUp, switchToLogin }) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+    console.log('Form Submitted', values); 
+    try {
+      const endpoint = isSignUp ? 'https://myeasykart.codeyogi.io/signup' : 'https://myeasykart.codeyogi.io/login';
+      const response = await axios.post(endpoint, values);
+
+      console.log('Response', response); 
+
+      if (response.data.token) {
+        localStorage.setItem('jwtToken', response.data.token);
+        navigate('/dashboard'); 
+      }
+    } catch (error) {
+      console.log('Error', error.response);
+      if (error.response && error.response.data && error.response.data.errors) {
+        const errorMessages = error.response.data.errors.map(err => `${err.field}: ${err.message}`).join(', ');
+        setErrors({ apiError: errorMessages });
+      } else if (error.response && error.response.data && error.response.data.message) {
+        setErrors({ apiError: error.response.data.message });
+      } else {
+        setErrors({ apiError: 'An unexpected error occurred' });
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const validationSchema = Yup.object().shape({
+    fullName: isSignUp ? Yup.string().required('Full Name is required') : Yup.string().nullable(),
+    email: Yup.string().email('Invalid email format').required('Email is required'),
+    password: Yup.string().required('Password is required'),
+  });
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-blue-900">
@@ -14,20 +46,31 @@ const LoginForm = ({ isSignUp, switchToSignUp, switchToLogin, handleSubmit, hand
         <h1 className="text-2xl font-semibold text-blue-700">{isSignUp ? 'Sign Up' : 'Login'}</h1>
 
         <Formik
-          initialValues={values}
+          initialValues={{ fullName: isSignUp ? '' : undefined, email: '', password: '' }}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
         >
-          {({ handleSubmit, handleChange, values, errors, touched }) => (
-            <form onSubmit={handleSubmit}>
+          {({ isSubmitting, errors }) => (
+            <Form>
+              {isSignUp && (
+                <div>
+                  <Field
+                    type="text"
+                    name="fullName"
+                    placeholder="Full Name"
+                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                  <ErrorMessage name="fullName" component="div" className="mt-2 text-sm text-red-600" />
+                </div>
+              )}
               <div>
                 <Field
-                  type="text"
-                  name="username"
-                  placeholder="Username"
+                  type="email"
+                  name="email"
+                  placeholder="Email"
                   className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
-                <ErrorMessage name="username" component="div" className="mt-2 text-sm text-red-600" />
+                <ErrorMessage name="email" component="div" className="mt-2 text-sm text-red-600" />
               </div>
               <div>
                 <Field
@@ -38,19 +81,10 @@ const LoginForm = ({ isSignUp, switchToSignUp, switchToLogin, handleSubmit, hand
                 />
                 <ErrorMessage name="password" component="div" className="mt-2 text-sm text-red-600" />
               </div>
-              {isSignUp && (
-                <div>
-                  <Field
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                  <ErrorMessage name="email" component="div" className="mt-2 text-sm text-red-600" />
-                </div>
-              )}
+              {errors.apiError && <div className="text-red-500">{errors.apiError}</div>}
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
               >
                 {isSignUp ? 'Sign Up' : 'Log In'}
@@ -65,43 +99,13 @@ const LoginForm = ({ isSignUp, switchToSignUp, switchToLogin, handleSubmit, hand
                   {isSignUp ? 'Log in' : 'Sign Up'}
                 </button>
               </p>
-            </form>
+            </Form>
           )}
         </Formik>
       </div>
     </div>
   );
 };
-
-// Define initial values, validation schema, and submit handler
-const initialValues = {
-  username: '',
-  password: '',
-  email: '' // Include email for SignUp
-};
-
-const validationSchema = Yup.object({
-  username: Yup.string().required('Username is required'),
-  password: Yup.string().required('Password is required'),
-  email: Yup.string().email('Invalid email format').when('isSignUp', {
-    is: true,
-    then: Yup.string().required('Email is required')
-  })
-});
-
-const handleSubmit = async (values) => {
-  try {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log(`${values.email ? 'Sign-up' : 'Login'} data`, values);
-    // Handle sign-up or login action here
-  } catch (error) {
-    console.error(`${values.email ? 'Sign-up' : 'Login'} failed:`, error);
-  }
-};
-
-// Wrap LoginForm with withFormik HOC
-const EnhancedLoginForm = withFormik(LoginForm, initialValues, validationSchema, handleSubmit);
 
 const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -110,7 +114,7 @@ const Login = () => {
   const switchToLogin = () => setIsSignUp(false);
 
   return (
-    <EnhancedLoginForm
+    <LoginForm
       isSignUp={isSignUp}
       switchToSignUp={switchToSignUp}
       switchToLogin={switchToLogin}

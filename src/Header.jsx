@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { HiOutlineShoppingCart } from 'react-icons/hi';
 
-const Header = ({ isAuthenticated }) => {
+const Header = ({ isAuthenticated, onLogout }) => {
   return (
     <div className="bg-white flex justify-between items-center h-20 px-5 lg:px-20">
       <Link to="/">
@@ -16,8 +16,10 @@ const Header = ({ isAuthenticated }) => {
         <Link to="/cart" className="relative">
           <HiOutlineShoppingCart className="h-10 w-10 text-gray-600" />
         </Link>
-        {!isAuthenticated && (
+        {!isAuthenticated ? (
           <Link to="/login" className="ml-4 text-blue-500">Login</Link>
+        ) : (
+          <button onClick={onLogout} className="ml-4 text-red-500">Logout</button>
         )}
       </div>
     </div>

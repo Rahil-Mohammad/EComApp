@@ -3,31 +3,35 @@ import { Formik, Field, ErrorMessage, Form } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import withPopup from './withPopup'; // Import the HOC
 
-const LoginForm = ({ isSignUp, switchToSignUp, switchToLogin }) => {
+const LoginForm = ({ isSignUp, switchToSignUp, switchToLogin, showPopup }) => {
   const navigate = useNavigate();
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    console.log('Form Submitted', values); 
+    console.log('Form Submitted', values);
     try {
       const endpoint = isSignUp ? 'https://myeasykart.codeyogi.io/signup' : 'https://myeasykart.codeyogi.io/login';
       const response = await axios.post(endpoint, values);
 
-      console.log('Response', response); 
+      console.log('Response', response);
 
       if (response.data.token) {
         localStorage.setItem('jwtToken', response.data.token);
-        navigate('/dashboard'); 
+        navigate('/dashboard'); // Redirect to dashboard
       }
     } catch (error) {
       console.log('Error', error.response);
       if (error.response && error.response.data && error.response.data.errors) {
         const errorMessages = error.response.data.errors.map(err => `${err.field}: ${err.message}`).join(', ');
         setErrors({ apiError: errorMessages });
+        showPopup('Invalid credentials provided'); // Show popup notification
       } else if (error.response && error.response.data && error.response.data.message) {
         setErrors({ apiError: error.response.data.message });
+        showPopup('Invalid credentials provided'); // Show popup notification
       } else {
         setErrors({ apiError: 'An unexpected error occurred' });
+        showPopup('An unexpected error occurred'); // Show popup notification
       }
     } finally {
       setSubmitting(false);
@@ -81,7 +85,7 @@ const LoginForm = ({ isSignUp, switchToSignUp, switchToLogin }) => {
                 />
                 <ErrorMessage name="password" component="div" className="mt-2 text-sm text-red-600" />
               </div>
-              {errors.apiError && <div className="text-red-500">{errors.apiError}</div>}
+              {errors.apiError && <div className="text-red-500 mt-2">{errors.apiError}</div>}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -89,7 +93,7 @@ const LoginForm = ({ isSignUp, switchToSignUp, switchToLogin }) => {
               >
                 {isSignUp ? 'Sign Up' : 'Log In'}
               </button>
-              <p className="text-sm text-center text-blue-600">
+              <p className="text-sm text-center text-blue-600 mt-2">
                 {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
                 <button
                   type="button"
@@ -107,6 +111,8 @@ const LoginForm = ({ isSignUp, switchToSignUp, switchToLogin }) => {
   );
 };
 
+const EnhancedLoginForm = withPopup(LoginForm);
+
 const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
 
@@ -114,7 +120,7 @@ const Login = () => {
   const switchToLogin = () => setIsSignUp(false);
 
   return (
-    <LoginForm
+    <EnhancedLoginForm
       isSignUp={isSignUp}
       switchToSignUp={switchToSignUp}
       switchToLogin={switchToLogin}

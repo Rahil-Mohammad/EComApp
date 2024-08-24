@@ -1,60 +1,43 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import { IoMdCloseCircle } from "react-icons/io";
+import Input from "./Input";
+import { Link } from "react-router-dom";
+function CartRow({ product, quantity, onQuantityChange, onRemove }) {
+  const handleChange = (e) => {
+    onQuantityChange(product.id, +e.target.value);
+  };
 
-const CartRow = ({ item, onRemoveFromCart, onQuantityChange }) => {
   const handleRemove = () => {
-    onRemoveFromCart(item.id);
+    onRemove(product.id);
   };
-
-  const handleQuantityChange = (event) => {
-    onQuantityChange(item.id, parseInt(event.target.value, 10));
-  };
-
   return (
-    <tr>
-      <td className="border border-gray-200 p-2 flex items-center">
-        <button
-          onClick={handleRemove}
-          className="bg-gray-200 text-red-500 rounded-full w-8 h-8 flex items-center justify-center mr-2"
-        >
-          &times;
-        </button>
-        <img src={item.image} alt={item.title} className="w-16 h-16" />
-        <span className="ml-4">{item.title}</span>
-      </td>
-      <td className="border border-gray-200 p-2">${item.price.toFixed(2)}</td>
-      <td className="border border-gray-200 p-2">
-        <input
-          type="number"
-          min="1"
-          value={item.quantity}
-          onChange={handleQuantityChange}
-          className="border rounded px-2 py-1 w-16"
+    <div className="flex items-center space-x-4 px-4 py-3 border border-gray-100">
+      <span className="w-10 h-10 flex items-center text-gray-500">
+        <Link className=" text-gray-300 text-2xl" onClick={handleRemove}>
+          <IoMdCloseCircle />
+        </Link>
+      </span>
+      <div className="w-10 h-10">
+        <img
+          className="w-full h-full object-cover"
+          src={product.thumbnail}
+          alt=""
         />
-      </td>
-      <td className="border border-gray-200 p-2">${(item.price * item.quantity).toFixed(2)}</td>
-      <td className="border border-gray-200 p-2">
-        <button
-          onClick={handleRemove}
-          className="bg-red-500 text-white rounded px-4 py-2"
-        >
-          Remove
-        </button>
-      </td>
-    </tr>
+      </div>
+      <h3 className="grow text-primary-dark font-semibold">{product.title}</h3>
+      <span className="w-20">${product.price}</span>
+      <div className="w-32">
+        <div className="w-12">
+          <Input
+            type="number"
+            className="px-2 py-1"
+            value={quantity}
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+      <span className="w-20">${product.price * quantity}</span>
+    </div>
   );
-};
-
-CartRow.propTypes = {
-  item: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    title: PropTypes.string.isRequired,
-    price: PropTypes.number.isRequired,
-    quantity: PropTypes.number.isRequired,
-    image: PropTypes.string.isRequired,
-  }).isRequired,
-  onRemoveFromCart: PropTypes.func.isRequired,
-  onQuantityChange: PropTypes.func.isRequired,
-};
-
+}
 export default CartRow;

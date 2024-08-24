@@ -1,33 +1,41 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-
-function Product({ id, pic, title, category, rate, price, onAddToCart }) {
-  const handleAddToCart = () => {
-    onAddToCart({ id, title, price, image: pic });
-  };
-
+import React from "react";
+import { Link } from "react-router-dom";
+import { IoIosStarOutline } from "react-icons/io";
+function Product({ title, category, thumbnail, price, id, rating }) {
   return (
-    <div className="border bg-white flex flex-col gap-4">
-      <img
-        className="pt-2 h-64 w-72 lg:h-60 lg:w-60 self-center object-cover ml-2 mt-2 pr-1"
-        src={pic}
-        alt={title}
-      />
-      <div className="text-xs ml-2 font-bold mt-2">{title}</div>
-      <div className="text-red-500 text-xs ml-2">{category}</div>
-      <div className="text-xs ml-2 -mt-1">Rating: {rate}/5</div> {/* Display rating */}
-      <div className="ml-2 -mt-1 font-bold">Price: ${price}</div>
-      <Link to={`/ProductDetails/${id}`} className="ml-2 -mt-1 text-blue-500">
-        View Details
-      </Link>
-      <button
-        onClick={handleAddToCart}
-        className="ml-2 mt-2 bg-blue-500 text-white rounded px-4 py-2"
-      >
-        Add to Cart
-      </button>
-    </div>
+    <>
+      <div className="max-w-xs">
+        <div className="w-full aspect-square">
+          <img
+            className="w-full h-full object-cover"
+            src={thumbnail}
+            alt="picture"
+          />
+        </div>
+        <div className="gap-0.5 flex flex-col mt-1">
+          <div className="text-gray-700 text-xs">{category}</div>
+          <div className="font-semibold text-sm ">{title}</div>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-semibold text-gray-700 ">
+              {rating}
+            </span>
+            <span className="flex text-primary-light">
+              <IoIosStarOutline />
+              <IoIosStarOutline />
+              <IoIosStarOutline />
+              <IoIosStarOutline />
+            </span>
+          </div>
+
+          <div className="font-bold text-sm">${price}</div>
+          <Link
+            className="bg-primary-dark self-start hover:bg-primary-default text-white px-2 py-1 rounded-md text-sm"
+            to={"products/" + id}>
+            View Details
+          </Link>
+        </div>
+      </div>
+    </>
   );
 }
-
-export default Product;
+export default Product.jsx;

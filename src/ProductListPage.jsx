@@ -1,56 +1,100 @@
-import React, { useState } from 'react';
-import ProductList from './ProductList';
-import initialProducts from './data';
-import sortProducts from './sortProducts';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import ProductList from "./ProductList";
+import { getProductsList } from "./api";
+import NoMatching from "./NoMatching";
+import  Loading  from "./Loading";
+import Input from "./Input";
+import { range } from "lodash";
+import { Link, useSearchParams } from "react-router-dom";
+function ProductListPage() {
+  const [productData, setProductData] = useState();
+  const [loading, setLoading] = useState(true);
 
-const ProductListPage = ({ onAddToCart }) => {
-  const [products, setProducts] = useState(initialProducts);
-  const [sortOption, setSortOption] = useState('default');
-  const [searchQuery, setSearchQuery] = useState('');
+  let [searchParams, setSearchParams] = useSearchParams();
+  const params = Object.fromEntries([...searchParams]);
+  let { sort, query, page } = params;
+  page = +page || 1;
+  sort = sort || "default";
+  query = query || "";
 
-  const handleSort = (option) => {
-    const sortedProducts = sortProducts(products, option);
-    setProducts(sortedProducts);
-    setSortOption(option);
-  };
+  useEffect(() => {
+    let sortBy;
+    let sortType;
 
-  const handleChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
+    if (sort == "title") {
+      sortBy = "title";
+    } else if (sort == "priceLow") {
+      sortBy = "price";
+    } else if (sort == "priceHigh") {
+      sortBy = "price";
+      sortType = "desc";
+    }
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    getProductsList(sortBy, query, page, sortType).then((body) => {
+      setProductData(body);
+      setLoading(false);
+    });
+  }, [sort, query, page]);
+
+  const handleQueryChange = useCallback((e) => {
+    setSearchParams(
+      { ...params, query: e.target.value, page: 1 },
+      { replace: false }
+    );
+  }, []);
+
+  const handleSortChange = useCallback((e) => {
+    setSearchParams({ ...params, sort: e.target.value }, { replace: false });
+  }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
-    <div className="max-w-4xl bg-white gap-4 py-14 mx-auto px-12">
-      <div className="flex justify-between flex-wrap px-2 py-2 gap-2">
-        <input 
-          className="border-2 border-gray-500 rounded-md flex-grow"
-          type="text" 
-          onChange={handleChange} 
-          placeholder="Search"
-        />
-        <select 
-          className="border rounded px-4 py-2"
-          value={sortOption}
-          onChange={(e) => handleSort(e.target.value)}
-        >
-          <option value="default">Default sorting</option>
-          <option value="title">Sort by title</option>
-          <option value="price-low-high">Sort by price: low to high</option>
-          <option value="price-high-low">Sort by price: high to low</option>
-        </select>
-      </div>
-      <div className="container mx-auto px-4 py-8">
-        {filteredProducts.length > 0 ? (
-          <ProductList products={filteredProducts} onAddToCart={onAddToCart} />
-        ) : (
-          <div className="text-center text-2xl">Product not found</div>
+    <div>
+      <div className="max-w-6xl bg-white mx-auto px-9 py-12.5 my-16">
+        <div className="flex justify-end mb-2">
+          <Input
+            value={query}
+            type="text"
+            placeholder="Search"
+            className="rounded-md border px-3 py-2 border-gray-200"
+            onChange={handleQueryChange}
+          />
+          <select
+            value={sort}
+            onChange={handleSortChange}
+            className="border border-gray-200 rounded-md p-2 mb-2 ml-2">
+            <option value="default">Default sort</option>
+            <option value="title">Sort by Title</option>
+            <option value="priceLow">Sort by price low to high</option>
+            <option value="priceHigh">Sort by price high to low</option>
+          </select>
+        </div>
+
+        {productData.data.length > 0 && (
+          <ProductList products={productData.data} />
         )}
+        {/* {data.length == 0 && (
+        <NoMatching>No matching products, please try something else</NoMatching>
+      )} */}
       </div>
+      <span className="ml-24 flex space-x-1">
+        {range(1, productData.meta.last_page + 1).map((pageNo) => (
+          <Link
+            to={"?" + new URLSearchParams({ ...params, page: pageNo })}
+            className={
+              "px-3 text-md font-semibold py-2 " +
+              (page === pageNo ? "bg-primary-light" : "bg-primary-default")
+            }
+            key={pageNo}
+            onClick={() => setPage(pageNo)}>
+            {pageNo}
+          </Link>
+        ))}
+      </span>
     </div>
   );
-};
-
+}
 export default ProductListPage;
